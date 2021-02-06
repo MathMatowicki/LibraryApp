@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.libraryapp.Database.Book;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -31,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private BookViewModel bookViewModel;
+    private Book editBook;
 
     private class BookHolder extends RecyclerView.ViewHolder {
         private TextView bookTitleTextView;
@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     private class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         private List<Book> bookList;
+
 
         @NonNull
         @Override
@@ -108,6 +109,25 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, NEW_BOOK_ACTIVITY_REQUEST_CODE);
         });
 
+        recyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(this, recyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        Intent intent = new Intent(MainActivity.this, EditBookActivity.class);
+                        intent.putExtra("title", adapter.bookList.get(position).getTitle());
+                        intent.putExtra("author", adapter.bookList.get(position).getAuthor());
+                        bookViewModel.delete(adapter.bookList.get(position));
+                        startActivityForResult(intent, EDIT_BOOK_ACTIVITY_REQUEST_CODE);
+                    }
+
+                    @Override
+                    public void onLongItemClick(View view, int position) {
+                        Intent intent = new Intent(MainActivity.this, EditBookActivity.class);
+                        bookViewModel.delete(adapter.bookList.get(position));
+                        Toast.makeText(MainActivity.this, "Book deleted", Toast.LENGTH_SHORT).show();
+                    }
+                })
+        );
 
     }
 
@@ -141,28 +161,17 @@ public class MainActivity extends AppCompatActivity {
             Book book = new Book(data.getStringExtra(EditBookActivity.EXTRA_EDIT_BOOK_TITLE),
                     data.getStringExtra(EditBookActivity.EXTRA_EDIT_BOOK_AUTHOR));
             bookViewModel.insert(book);
-            Snackbar.make(findViewById(R.id.coordinator_layout), getString(R.string.book_added),
-                    Snackbar.LENGTH_SHORT).show();
-        } else {
-            Snackbar.make(findViewById(R.id.coordinator_layout),
-                    getString(R.string.empty_not_saved), Snackbar.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.book_added), Toast.LENGTH_SHORT).show();
+        } else if (requestCode == NEW_BOOK_ACTIVITY_REQUEST_CODE && !(resultCode == RESULT_OK)) {
+            Toast.makeText(this, "Couldn't add book", Toast.LENGTH_SHORT).show();
         }
-
-        if (requestCode == DELETE_BOOK_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-
-
-
-            Toast.makeText(this, "Delete success", Toast.LENGTH_SHORT).show();
-        }else{
-            Toast.makeText(this, "Couldn't delete", Toast.LENGTH_SHORT).show();
-        }
-
         if (requestCode == EDIT_BOOK_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-
-
+            Book book = new Book(data.getStringExtra(EditBookActivity.EXTRA_EDIT_BOOK_TITLE),
+                    data.getStringExtra(EditBookActivity.EXTRA_EDIT_BOOK_AUTHOR));
+            bookViewModel.insert(book);
             Toast.makeText(this, "Edit success", Toast.LENGTH_SHORT).show();
-        }else {
-            Toast.makeText(this, "Couldn't delete", Toast.LENGTH_SHORT).show();
+        } else if (requestCode == EDIT_BOOK_ACTIVITY_REQUEST_CODE && !(resultCode == RESULT_OK)) {
+            Toast.makeText(this, "Couldn't edit", Toast.LENGTH_SHORT).show();
         }
     }
 }

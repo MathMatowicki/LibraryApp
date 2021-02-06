@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,28 +23,43 @@ public class EditBookActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_book);
-
         editTitleEditText = findViewById(R.id.edit_book_title);
         editAuthorEditText = findViewById(R.id.edit_book_author);
-
         final Button butt = findViewById(R.id.save_button);
-        butt.setOnClickListener(view -> {
-            Toast.makeText(this, "zapisz ksiązke", Toast.LENGTH_SHORT).show();
-            Intent replyIntent = new Intent();
-            if (TextUtils.isEmpty(editTitleEditText.getText())
-                    || TextUtils.isEmpty(editAuthorEditText.getText())) {
-                setResult(RESULT_CANCELED, replyIntent);
-                Toast.makeText(this, "puste ", Toast.LENGTH_SHORT).show();
-            } else {
-                String title = editTitleEditText.getText().toString();
-                replyIntent.putExtra(EXTRA_EDIT_BOOK_TITLE, title);
-                String author = editAuthorEditText.getText().toString();
-                replyIntent.putExtra(EXTRA_EDIT_BOOK_AUTHOR, author);
-                setResult(RESULT_OK, replyIntent);
-                Toast.makeText(this, "rezultat "+ RESULT_OK, Toast.LENGTH_SHORT).show();
+        if (getIntent().hasExtra("title") && getIntent().hasExtra("author")) {
+            editAuthorEditText.setText(getIntent().getStringExtra("author"), TextView.BufferType.EDITABLE);
+            editTitleEditText.setText(getIntent().getStringExtra("title"), TextView.BufferType.EDITABLE);
 
-            }
-            finish();
-        });
+            butt.setOnClickListener(view -> {
+                Intent replyIntent = new Intent();
+                if (TextUtils.isEmpty(editTitleEditText.getText())
+                        || TextUtils.isEmpty(editAuthorEditText.getText())) {
+                    setResult(RESULT_CANCELED, replyIntent);
+                } else {
+                    String title = editTitleEditText.getText().toString();
+                    replyIntent.putExtra(EXTRA_EDIT_BOOK_TITLE, title);
+                    String author = editAuthorEditText.getText().toString();
+                    replyIntent.putExtra(EXTRA_EDIT_BOOK_AUTHOR, author);
+                    setResult(RESULT_OK, replyIntent);
+                }
+                finish();
+            });
+        } else {
+            butt.setOnClickListener(view -> {
+                Intent replyIntent = new Intent();
+                if (TextUtils.isEmpty(editTitleEditText.getText())
+                        || TextUtils.isEmpty(editAuthorEditText.getText())) {
+                    setResult(RESULT_CANCELED, replyIntent);
+                } else {
+                    String title = editTitleEditText.getText().toString();
+                    replyIntent.putExtra(EXTRA_EDIT_BOOK_TITLE, title);
+                    String author = editAuthorEditText.getText().toString();
+                    replyIntent.putExtra(EXTRA_EDIT_BOOK_AUTHOR, author);
+                    setResult(RESULT_OK, replyIntent);
+                }
+                finish();
+            });
+        }
     }
+
 }
